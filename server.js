@@ -31,12 +31,21 @@ let requestType = data.message.chat.type
 
   let date = data.message.date
   let message = data.message.text
+  
+let response = message
+  if(message === "hakim"){
+    response = 'his real cool right!!'
+  }
+  
+
   let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`
     await api.post(urlSend, {
       chat_id: chatId,
-      text: `You said: ${message}`
+      text: `${response}`
     
   });
+
+  
 
   res.sendStatus(200);
   
