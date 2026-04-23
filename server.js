@@ -3,6 +3,7 @@ let api = require('axios')
 let http = require('http')
 const app = express()
 let dotenv = require("dotenv")
+dotenv.config()
 const port = process.env.PORT || 3500
 const server = http.createServer(app)
 app.use(express.json());
@@ -25,7 +26,8 @@ app.post("/webhook", async (req, res) => {
 
   let senderId = data.message.from.id
   let isSenderBot = data.message.from.is_bot
-let senderName = data.message.from.first_name + (data.message.from.last_name || "")  let requestType = data.message.chat.type
+let senderName = data.message.from.first_name + (data.message.from.last_name || "")  
+let requestType = data.message.chat.type
 
   let date = data.message.date
   let message = data.message.text
