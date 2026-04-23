@@ -16,27 +16,24 @@ app.post("/webhook", async (req, res) => {
   if(!req.body){
     res.sendStatus(500);
   }
+  if (!req.body.message) return res.sendStatus(200);
+
+  
   let data = req.body;
   let id = data.message.message_id
     let chatId = data.message.chat.id
 
   let senderId = data.message.from.id
   let isSenderBot = data.message.from.is_bot
-    let senderName = data.message.from.first_name +  data.from.last_name
-  let requestType = data.message.chat.type
+let senderName = data.message.from.first_name + (data.message.from.last_name || "")  let requestType = data.message.chat.type
 
   let date = data.message.date
   let message = data.message.text
   let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`
     await api.post(urlSend, {
-   
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
       chat_id: chatId,
       text: `You said: ${message}`
-    })
+    
   });
 
   res.sendStatus(200);
