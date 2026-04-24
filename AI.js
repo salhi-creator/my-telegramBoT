@@ -1,6 +1,7 @@
 import { FileReader } from "./utilis.js";
 import { groq } from "./AImodels/Groq.js";
 import { gemini } from "./AImodels/Gemini.js";
+import { mistral } from "./AImodels/mistral.js";
 export async function AIanswer(message) {
   let msg = await FileReader("./instruction.txt");
   msg = `
@@ -19,6 +20,12 @@ ${message}
 
   try {
     return await groq(msg);
+  } catch (err) {
+    console.log("Groq failed:", err);
+  }
+
+    try {
+    return await mistral(msg);
   } catch (err) {
     console.log("Groq failed:", err);
   }
