@@ -3,6 +3,7 @@ import axios from "axios";
 import http from "http";
 
 import { AIanswer } from "./AI.js";
+import { redisFunc } from "./utilis.js";
 
 const app = express();
 import dotenv from "dotenv";
@@ -16,18 +17,23 @@ server.listen(port, () => {
 
 
 
+
+
 app.post("/webhook", async (req, res) => {
+  let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`;
   console.log("webHook telegram shit : ", req.body);
   if (!req.body) {
     return res.sendStatus(500);
   }
+  console.log(req.body);
   if (!req.body.message) return res.sendStatus(200);
 
   let data = req.body;
   let id = data.message.message_id;
   let chatId = data.message.chat.id;
 
-  let senderId = data.message.from.id;
+  let senderId = data?.message?.from?.id || data?.message?.chat?.id;
+
   let isSenderBot = data.message.from.is_bot;
   let senderName =
     data.message.from.first_name + (data.message.from.last_name || "");
@@ -35,18 +41,61 @@ app.post("/webhook", async (req, res) => {
 
   let date = data.message.date;
   let message = data.message.text;
-
   let response = message;
 
+  // when first time starts the bot 
+  if (message === "/start") {
+  await axios.post(
+    urlSend,
+    {
+      chat_id: chatId,
+      text: "👋 Welcome, I'm Hakim's AI assistant.\n\nI work with bots, web apps, and automation systems.\n\nExplain what you need—keep it simple, I’ll handle the technical side."
+    }
+  );
+
+  return res.sendStatus(200);
+}
+
+
+
+
+  // rate limiter checker
+
+  let text = `USER INFO : \n- FullName : ${senderName}\n- id: ${senderId}\n- CHAT_ID: ${chatId}\n USER MESSAGE : \n${message} \n`;
+  let rate = null;
   try {
-    response = await AIanswer(message);
+    rate = await redisFunc("rate", { id: senderId });
+    if (!rate) {
+      response =
+        "you can only send 5 messages every 30 sec for our security policies";
+    }
   } catch (err) {
-    console.log("gemini error ", err);
+    console.log(err);
+    rate = true; // redis fails just allow user
+    response =
+      "The AI model bot are not avaialable for now, it'll get back soon, Rate Limit Fail";
+  }
+
+  // AI model response
+  try {
+    if (rate) {
+      let history = await redisFunc('getCachedHistory',{id:senderId})
+      console.log("history : ",history)
+      let AImessage = `${text} USER HISTORY MESSAGES WHIT YOU : \n${history ?? ''}`
+      response = await AIanswer(AImessage);
+      console.log(response)
+      response = response?.info?.message ? response?.info?.message : "wait a minute";
+      await redisFunc('cacheHistory',{id:senderId,AImessage:response, UserMessage:message})
+    }
+  } catch (err) {
+    console.log("Ai error ", err);
     response =
       "please excuse me a bit , i have something to do first then i'll come back to ya";
   }
+
+  // send back to client
   try {
-    let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`;
+    
     const call = await axios.post(urlSend, {
       chat_id: chatId,
       text: `${response}`,
@@ -59,5 +108,3 @@ app.post("/webhook", async (req, res) => {
     return res.sendStatus(200);
   }
 });
-
-
