@@ -61,7 +61,7 @@ app.post("/webhook", async (req, res) => {
 
   // rate limiter checker
 
-  let text = `USER INFO : \n- FullName : ${senderName}\n- id: ${senderId}\n- CHAT_ID: ${chatId}\n USER MESSAGE : \n${message} \n`;
+  let text = `USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n USER MESSAGE : \n${message} \n`;
   let rate = null;
   try {
     rate = await redisFunc("rate", { id: senderId });
@@ -80,12 +80,18 @@ app.post("/webhook", async (req, res) => {
   try {
     if (rate) {
       let history = await redisFunc('getCachedHistory',{id:senderId})
-      console.log("history : ",history)
-      let AImessage = `${text} USER HISTORY MESSAGES WHIT YOU : \n${history ?? ''}`
-      response = await AIanswer(AImessage);
-      console.log(response)
-      response = response?.info?.message ? response?.info?.message : "wait a minute";
-      await redisFunc('cacheHistory',{id:senderId,AImessage:response, UserMessage:message})
+      
+
+      //console.log("history : ",history)
+      let AImessage = `${text} USER HISTORY MESSAGES WHIT YOU : \n${history ?? 'do not exist yet'} \n `
+      console.log("AImessage",AImessage)
+      let result = await AIanswer(AImessage);
+      // analyse AI data
+      console.log(result)
+      response = result?.message ? result?.message : "wait a minute";
+      delete result.message;
+      await redisFunc('cacheHistory',{id:senderId,AImessage:response, UserMessage:message  })
+      
     }
   } catch (err) {
     console.log("Ai error ", err);

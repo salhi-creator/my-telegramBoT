@@ -10,7 +10,6 @@ export async function FileReader(file) {
   return Insturactions;
 }
 
-
 export function safeExtractJSON(text) {
   try {
     // remove markdown
@@ -23,12 +22,8 @@ export function safeExtractJSON(text) {
 
     const jsonStr = text.slice(start, end + 1);
 
-    
-    let data = JSON.parse(jsonStr)
-    return data || "something went wrong"
-    
-
-
+    let data = JSON.parse(jsonStr);
+    return data || "something went wrong";
   } catch (err) {
     console.log("JSON parse failed:", err.message);
     return null;
@@ -36,9 +31,10 @@ export function safeExtractJSON(text) {
 }
 
 export async function redisFunc(method, data) {
-  if (method === "rate") {
-    const key = `rate:${data.id}`;
 
+  const key = `rate:${data.id}`;
+  const keyMsg = `info:${data.id}:message`;
+  if (method === "rate") {
     const count = await redis.incr(key);
 
     if (count === 1) {
@@ -54,28 +50,29 @@ export async function redisFunc(method, data) {
 
     return true;
   }
-  const key = `info:${data.id}:message`;
+
 
   if (method === "cacheHistory") {
-    await redis.rpush(
-      key,
-      JSON.stringify({
-        userText: data.UserMessage,
-        aiText: data.AImessage,
-        time: Date.now(),
-      }),
-    );
-    await redis.expire(key, 1800);
+    await redis
+      .multi()
+      .rpush(
+        keyMsg,
+        JSON.stringify({
+          userText: data.UserMessage,
+          aiText: data.AImessage,
+          time: Date.now(),
+        }),
+      )
+      .expire(keyMsg, 1800, "NX")
+      .exec();
   }
 
-  await redis.ltrim(key, 0, 19);
+  await redis.ltrim(keyMsg, -20, -1);
+
   if (method === "getCachedHistory") {
-    let res = await redis.lrange(key,0,19);
-    res = res.map(row => JSON.parse(row))
-    let history = res.map(row => 
-       `ai said : (${row.aiText}) ==> user said :  (${row.userText})\n`
-    );
-    return history || null;
+    let res = await redis.lrange(keyMsg, -20, -1)
+    res = res.map((row) => JSON.parse(row));
+    let history = res.map((row) => `user said :  (${row.userText}) ==>  ai said : (${row.aiText}) \n `);
+    return history;
   }
-  
 }

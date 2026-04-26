@@ -2,6 +2,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import Redis from "ioredis";
+import { MongoClient } from "mongodb";
+
+export const mongodb = new MongoClient(process.env.MONGO_URL)
 export const redis = new Redis(
   {
     host: process.env.REDIS_HOST,
@@ -16,6 +19,9 @@ export const redis = new Redis(
     maxRetriesPerRequest: null, // important for long blocking calls
   },
 );
+
+
+
 
 redis.on("connect", () => {
   console.log("✅ Redis connected");
@@ -32,11 +38,15 @@ redis.on("close", () => {
 redis.on("reconnecting", () => {
   console.log("🔄 Redis reconnecting...");
 });
-/*
-await Redisredis.connect();
 
-await Redisredis.set('foo', 'bar');
-const result = await Redisredis.get('foo');
-console.log(result)  // >>> bar
+/*(async ()=>{
+  await mongodb.connect()
+})()*/
 
-*/
+
+
+
+process.on("SIGINT",()=>{
+  redis.disconnect();
+  mongodb.close()
+})
