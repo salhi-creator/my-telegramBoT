@@ -20,7 +20,7 @@ app.post("/webhook", async (req, res) => {
   let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`;
   console.log("webHook telegram shit : ", req.body);
   if (!req.body) {
-    return res.sendStatus(500);
+    return
   }
   console.log(req.body);
 
@@ -46,7 +46,7 @@ app.post("/webhook", async (req, res) => {
       text: "👋 Welcome, I'm Hakim's AI assistant.\n\nI work with bots, web apps, and automation systems.\n\nExplain what you need—keep it simple, I’ll handle the technical side.",
     });
 
-    return res.sendStatus(200);
+    return
   }
 
   if (req.body.callback_query) {
@@ -58,7 +58,7 @@ app.post("/webhook", async (req, res) => {
       console.log("after submit  ", res);
     }
   }
-  if (!req.body.message && !req.body.callback_query) return res.sendStatus(200);
+  if (!req.body.message && !req.body.callback_query) return
 
   // rate limiter checker
 
@@ -124,10 +124,10 @@ app.post("/webhook", async (req, res) => {
           : undefined,
     });
 
-    return res.sendStatus(200);
+    return
   } catch (err) {
     console.error("WEBHOOK ERROR:", err);
-
-    return res.sendStatus(200);
+    return
+    
   }
 });
