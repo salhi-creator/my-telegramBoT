@@ -25,17 +25,17 @@ app.post("/webhook", async (req, res) => {
 
   let data = req.body;
   let id = data.message?.message_id;
-  let chatId = data.message.chat.id;
+  let chatId = data?.message?.chat?.id;
 
   let senderId = data?.message?.from?.id || data?.message?.chat?.id;
 
   let isSenderBot = data.message.from.is_bot;
   let senderName =
     data.message.from.first_name + (data.message.from.last_name || "");
-  let requestType = data.message.chat.type;
+  let requestType = data?.message?.chat.type;
 
-  let date = data.message.date;
-  let message = data.message.text;
+  let date = data?.message?.date;
+  let message = data?.message?.text;
   let response = message;
 
   // when first time starts the bot
