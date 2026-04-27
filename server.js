@@ -96,6 +96,7 @@ app.post("/webhook", async (req, res) => {
         id: senderId,
         AImessage: response,
         UserMessage: message,
+        info:{...result.user , ...result.info}
       });
     }
   } catch (err) {
