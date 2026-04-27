@@ -61,17 +61,18 @@ app.post("/webhook", async (req, res) => {
 
     let result = await AIanswer(CallBackMessage);
 
+    await SendMessage(chatId,result?.message || null , null)
+       
     if (action === "submit") {
       // mongo db store
+       
     }
     if (action === "req-detail") {
-       await SendMessage(chatId,result?.message || null , null)
-       return
+      
     }
         if (action === "cancel") {
       // mongo db delete
-             await SendMessage(chatId,result?.message || null , null)
-             return
+            
 
     }
     console.log(result);
