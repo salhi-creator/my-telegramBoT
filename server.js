@@ -78,6 +78,8 @@ app.post("/webhook", async (req, res) => {
   }
 
   // AI model response
+
+  let result = null;
   try {
     if (rate) {
       let history = await redisFunc("getCachedHistory", { id: senderId });
@@ -85,7 +87,7 @@ app.post("/webhook", async (req, res) => {
       //console.log("history : ",history)
       let AImessage = `${text} USER HISTORY MESSAGES WHIT YOU : \n${history ?? "do not exist yet"} \n `;
       console.log("AImessage", AImessage);
-      let result = await AIanswer(AImessage);
+     result = await AIanswer(AImessage);
       // analyse AI data
       console.log(result);
       response = result?.message ? result?.message : "wait a minute";
