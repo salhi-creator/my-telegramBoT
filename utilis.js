@@ -83,7 +83,7 @@ export async function redisFunc(method, data) {
     let res = await redis.lrange(keyMsg, -20, -1)
     res = res.map((row) => JSON.parse(row));
     let history = res.map((row) => `user said :  (${row.userText}) ==>  ai said : (${row.aiText}) \n `);
-    return history;
+    return history || "no history yet";
   }
 }
 

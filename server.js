@@ -56,7 +56,7 @@ app.post("/webhook", async (req, res) => {
     let CallBackMessage = `USER HISTORY MESSAGES WHIT YOU :\n ${history} \n USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n ORDER :\n
      ${action === "submit" ? "you should tell the user that his request has been set decent way" : ""} 
      ${action === "cancel" ? "you should tell the user that his request has been canceled decent way" : ""} 
-     ${action === "req-detail" ? "you give the user details of his project answer in message feild " : ""} 
+     ${action === "req-detail" ? "gather all the info you include then give the user details of his project answer in message feild " : ""} 
     `;
 
     let result = await AIanswer(CallBackMessage);

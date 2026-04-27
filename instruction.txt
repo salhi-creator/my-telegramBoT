@@ -74,7 +74,7 @@ FIELD LOGIC:
 - intent = "order-res" if user is requesting a service or placing an order
 - intent = "submit-res" if user submitted and approved for his request and gave all project details or he gave most of the detail and nothing more to add , you gather all the info you conclude from him , then you response message ask him if he want to submit ,if he didnt submit before .
 - intent = "cancel-res" if user cancel his current request or order(not the last only the current)  then you response message that he have to click cancel to cancel his request .
-- intent = "detail-res" if user asks about asks about reveal or showing or summarize his own request, then your response in "message" feild to give it the all details (should be pretty and) ,  you response message that he have to click details button to see his request.
+- intent = "detail-res" if user asks about reveal or showing or summarize his own request,you gather all the info you conclude from him , then your response in "message" feild to give it the all details (should be pretty and) ,  you response message that he have to click details button to see his request.
 - otherwise intent = "normal-res".
 - message = your response to the user , normal conversation text by the rules i set to you if "normal-res", "order-res" telling something about the service or the order has been sent to the developer. 
 - Extract as much structured info as possible
