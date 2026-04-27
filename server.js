@@ -29,7 +29,7 @@ app.post("/webhook", async (req, res) => {
 
   let senderId = data?.message?.from?.id || data?.message?.chat?.id;
 
-  let isSenderBot = data.message.from.is_bot;
+  let isSenderBot = data?.message?.from?.is_bot;
   let senderName =
     data.message.from.first_name + (data.message.from.last_name || "");
   let requestType = data?.message?.chat.type;
@@ -76,6 +76,7 @@ app.post("/webhook", async (req, res) => {
             
 
     }
+    return
     console.log(result);
     response = result?.message ? result?.message : "wait a minute";
     delete result.message;
