@@ -34,6 +34,7 @@ export async function redisFunc(method, data) {
 
   const key = `rate:${data.id}`;
   const keyMsg = `info:${data.id}:message`;
+  const KeyUser = `info:${data.id}:order`;
   if (method === "rate") {
     const count = await redis.incr(key);
 
@@ -51,8 +52,13 @@ export async function redisFunc(method, data) {
     return true;
   }
 
+    if(method === "getInfo"){
+    let res=  await redis.hgetall(KeyUser)
+    return res;
+  }
 
-  if (method === "cacheHistory") {
+
+ if (method === "cacheHistory") {
     await redis
       .multi()
       .rpush(
@@ -62,8 +68,11 @@ export async function redisFunc(method, data) {
           aiText: data.AImessage,
           time: Date.now(),
         }),
-      )
+      ).hset(KeyUser,{
+        ...data.info
+      })
       .expire(keyMsg, 1800, "NX")
+      .expire(KeyUser, 1800, "NX")
       .exec();
   }
 

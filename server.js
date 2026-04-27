@@ -15,18 +15,14 @@ server.listen(port, () => {
   console.log("bot server is working");
 });
 
-
-
-
-
 app.post("/webhook", async (req, res) => {
+  res.sendStatus(200); // FIRST LINE
   let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`;
   console.log("webHook telegram shit : ", req.body);
   if (!req.body) {
     return res.sendStatus(500);
   }
   console.log(req.body);
-  if (!req.body.message) return res.sendStatus(200);
 
   let data = req.body;
   let id = data.message.message_id;
@@ -43,21 +39,26 @@ app.post("/webhook", async (req, res) => {
   let message = data.message.text;
   let response = message;
 
-  // when first time starts the bot 
+  // when first time starts the bot
   if (message === "/start") {
-  await axios.post(
-    urlSend,
-    {
+    await axios.post(urlSend, {
       chat_id: chatId,
-      text: "👋 Welcome, I'm Hakim's AI assistant.\n\nI work with bots, web apps, and automation systems.\n\nExplain what you need—keep it simple, I’ll handle the technical side."
+      text: "👋 Welcome, I'm Hakim's AI assistant.\n\nI work with bots, web apps, and automation systems.\n\nExplain what you need—keep it simple, I’ll handle the technical side.",
+    });
+
+    return res.sendStatus(200);
+  }
+
+  if (req.body.callback_query) {
+    let action = req.body.callback_query.data;
+    console.log("action ", action);
+    if (action === "submit") {
+      console.log("user buttons ");
+      let res = await redisFunc("getInfo", { id: senderId });
+      console.log("after submit  ", res);
     }
-  );
-
-  return res.sendStatus(200);
-}
-
-
-
+  }
+  if (!req.body.message && !req.body.callback_query) return res.sendStatus(200);
 
   // rate limiter checker
 
@@ -79,19 +80,21 @@ app.post("/webhook", async (req, res) => {
   // AI model response
   try {
     if (rate) {
-      let history = await redisFunc('getCachedHistory',{id:senderId})
-      
+      let history = await redisFunc("getCachedHistory", { id: senderId });
 
       //console.log("history : ",history)
-      let AImessage = `${text} USER HISTORY MESSAGES WHIT YOU : \n${history ?? 'do not exist yet'} \n `
-      console.log("AImessage",AImessage)
+      let AImessage = `${text} USER HISTORY MESSAGES WHIT YOU : \n${history ?? "do not exist yet"} \n `;
+      console.log("AImessage", AImessage);
       let result = await AIanswer(AImessage);
       // analyse AI data
-      console.log(result)
+      console.log(result);
       response = result?.message ? result?.message : "wait a minute";
       delete result.message;
-      await redisFunc('cacheHistory',{id:senderId,AImessage:response, UserMessage:message  })
-      
+      await redisFunc("cacheHistory", {
+        id: senderId,
+        AImessage: response,
+        UserMessage: message,
+      });
     }
   } catch (err) {
     console.log("Ai error ", err);
@@ -101,10 +104,24 @@ app.post("/webhook", async (req, res) => {
 
   // send back to client
   try {
-    
     const call = await axios.post(urlSend, {
       chat_id: chatId,
       text: `${response}`,
+      reply_markup:
+        result?.intent === "submit-res"
+          ? {
+              inline_keyboard: [
+                [{ text: "Submit Your Request", callback_data: "submit" }],
+                [{ text: "Cancel Your Request", callback_data: "cancel" }],
+                [
+                  {
+                    text: "Details Of Your Request",
+                    callback_data: "req-detail",
+                  },
+                ],
+              ],
+            }
+          : undefined,
     });
 
     return res.sendStatus(200);
