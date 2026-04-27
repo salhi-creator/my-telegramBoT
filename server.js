@@ -24,14 +24,14 @@ app.post("/webhook", async (req, res) => {
   console.log(req.body);
 
   let data = req.body;
-  let id = data.message?.message_id;
+  let id = data?.message?.message_id;
   let chatId = data?.message?.chat?.id;
 
   let senderId = data?.message?.from?.id || data?.message?.chat?.id;
 
   let isSenderBot = data?.message?.from?.is_bot;
   let senderName =
-    data.message.from.first_name + (data.message.from.last_name || "");
+    data?.message?.from?.first_name + (data?.message?.from?.last_name || "");
   let requestType = data?.message?.chat.type;
 
   let date = data?.message?.date;
@@ -61,7 +61,7 @@ app.post("/webhook", async (req, res) => {
 
     let result = await AIanswer(CallBackMessage);
 
-    let ID = req.body.callback_query.message.chat.id
+    let ID = req.body.callback_query?.message?.chat?.id
     await SendMessage(ID,result?.message || null , null)
        
     if (action === "submit") {
