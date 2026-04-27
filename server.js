@@ -17,15 +17,14 @@ server.listen(port, () => {
 
 app.post("/webhook", async (req, res) => {
   res.sendStatus(200); // FIRST LINE
-  let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`;
   console.log("webHook telegram shit : ", req.body);
   if (!req.body) {
-    return
+    return;
   }
   console.log(req.body);
 
   let data = req.body;
-  let id = data.message.message_id;
+  let id = data.message?.message_id;
   let chatId = data.message.chat.id;
 
   let senderId = data?.message?.from?.id || data?.message?.chat?.id;
@@ -46,19 +45,49 @@ app.post("/webhook", async (req, res) => {
       text: "👋 Welcome, I'm Hakim's AI assistant.\n\nI work with bots, web apps, and automation systems.\n\nExplain what you need—keep it simple, I’ll handle the technical side.",
     });
 
-    return
+    return;
   }
-
+  // handel buttons click
   if (req.body.callback_query) {
+    let history = await redisFunc("getCachedHistory", { id: senderId });
     let action = req.body.callback_query.data;
+
     console.log("action ", action);
+
+    //console.log("history : ",history)
+
+    let CallBackMessage = `USER HISTORY MESSAGES WHIT YOU :\n ${history} \n USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n ORDER :\n
+     ${action === "submit" ? "you should tell the user that his request has been set decent way" : ""} 
+     ${action === "cancel" ? "you should tell the user that his request has been canceled decent way" : ""} 
+     ${action === "req-detail" ? "you give the user details of his project answer in message feild " : ""} 
+    `;
+
+    let result = await AIanswer(CallBackMessage);
+
     if (action === "submit") {
-      console.log("user buttons ");
-      let res = await redisFunc("getInfo", { id: senderId });
-      console.log("after submit  ", res);
+      // mongo db store
     }
+    if (action === "req-detail") {
+       await SendMessage(result?.message || null , null)
+       return
+    }
+        if (action === "cancel") {
+      // mongo db delete
+             await SendMessage(result?.message || null , null)
+             return
+
+    }
+    console.log(result);
+    response = result?.message ? result?.message : "wait a minute";
+    delete result.message;
+    await redisFunc("cacheHistory", {
+      id: senderId,
+      AImessage: response,
+      UserMessage: message,
+      info: { ...result.user, ...result.info },
+    });
   }
-  if (!req.body.message && !req.body.callback_query) return
+  if (!req.body.message && !req.body.callback_query) return;
 
   // rate limiter checker
 
@@ -87,7 +116,7 @@ app.post("/webhook", async (req, res) => {
       //console.log("history : ",history)
       let AImessage = `${text} USER HISTORY MESSAGES WHIT YOU : \n${history ?? "do not exist yet"} \n `;
       console.log("AImessage", AImessage);
-     result = await AIanswer(AImessage);
+      result = await AIanswer(AImessage);
       // analyse AI data
       console.log(result);
       response = result?.message ? result?.message : "wait a minute";
@@ -96,7 +125,7 @@ app.post("/webhook", async (req, res) => {
         id: senderId,
         AImessage: response,
         UserMessage: message,
-        info:{...result.user , ...result.info}
+        info: { ...result.user, ...result.info },
       });
     }
   } catch (err) {
@@ -106,31 +135,6 @@ app.post("/webhook", async (req, res) => {
   }
 
   // send back to client
-  try {
-    const call = await axios.post(urlSend, {
-      chat_id: chatId,
-      text: `${response}`,
-      reply_markup:
-        result?.intent === "submit-res"
-          ? {
-              inline_keyboard: [
-                [{ text: "Submit Your Request", callback_data: "submit" }],
-                [{ text: "Cancel Your Request", callback_data: "cancel" }],
-                [
-                  {
-                    text: "Details Of Your Request",
-                    callback_data: "req-detail",
-                  },
-                ],
-              ],
-            }
-          : undefined,
-    });
-
-    return
-  } catch (err) {
-    console.error("WEBHOOK ERROR:", err);
-    return
-    
-  }
+  await SendMessage(response, result);
+  return;
 });

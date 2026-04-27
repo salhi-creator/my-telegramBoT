@@ -85,3 +85,42 @@ export async function redisFunc(method, data) {
     return history;
   }
 }
+
+
+
+
+
+
+  let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`;
+
+export async function SendMessage(response, result) {
+   try {
+    const call = await axios.post(urlSend, {
+      chat_id: chatId,
+      text: `${response}`,
+      reply_markup:
+        result?.intent === "submit-res" ||
+        result?.intent === "cancel-res" ||
+        result?.intent === "detail-res"
+          ? {
+              inline_keyboard: [
+                [{ text: "Submit Your Request", callback_data: "submit" }],
+                [{ text: "Cancel Your Request", callback_data: "cancel" }],
+
+                [
+                  {
+                    text: "Show Details Of Your Request",
+                    callback_data: "req-detail",
+                  },
+                ],
+              ],
+            }
+          : undefined,
+    });
+
+    return;
+  } catch (err) {
+    console.error("WEBHOOK ERROR:", err);
+    return;
+  }
+}
