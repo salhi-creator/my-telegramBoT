@@ -39,8 +39,8 @@ export async function redisFunc(method, data) {
   if (method === "rate") {
     const count = await redis.incr(key);
 
-    if (count === 1) {
-      await redis.expire(key, 30);
+    if (count >= 1) {
+      await redis.expire(key, 30,"NX");
     }
 
     const ttl = await redis.ttl(key);

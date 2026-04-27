@@ -61,8 +61,8 @@ app.post("/webhook", async (req, res) => {
 
     let result = await AIanswer(CallBackMessage);
 
-    let chatId = req.body.callback_query.message.chat.id
-    await SendMessage(chatId,result?.message || null , null)
+    let ID = req.body.callback_query.message.chat.id
+    await SendMessage(ID,result?.message || null , null)
        
     if (action === "submit") {
       // mongo db store
