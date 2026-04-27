@@ -93,7 +93,7 @@ export async function redisFunc(method, data) {
 
   let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`;
 
-export async function SendMessage(response, result) {
+export async function SendMessage(chatId,response, result) {
    try {
     const call = await axios.post(urlSend, {
       chat_id: chatId,

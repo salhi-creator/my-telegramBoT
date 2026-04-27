@@ -3,7 +3,7 @@ import axios from "axios";
 import http from "http";
 
 import { AIanswer } from "./AI.js";
-import { redisFunc } from "./utilis.js";
+import { redisFunc, SendMessage } from "./utilis.js";
 
 const app = express();
 import dotenv from "dotenv";
@@ -40,10 +40,7 @@ app.post("/webhook", async (req, res) => {
 
   // when first time starts the bot
   if (message === "/start") {
-    await axios.post(urlSend, {
-      chat_id: chatId,
-      text: "👋 Welcome, I'm Hakim's AI assistant.\n\nI work with bots, web apps, and automation systems.\n\nExplain what you need—keep it simple, I’ll handle the technical side.",
-    });
+    await SendMessage(chatId,"👋 Welcome, I'm Hakim's AI assistant.\n\nI work with bots, web apps, and automation systems.\n\nExplain what you need—keep it simple, I’ll handle the technical side.")
 
     return;
   }
@@ -68,12 +65,12 @@ app.post("/webhook", async (req, res) => {
       // mongo db store
     }
     if (action === "req-detail") {
-       await SendMessage(result?.message || null , null)
+       await SendMessage(chatId,result?.message || null , null)
        return
     }
         if (action === "cancel") {
       // mongo db delete
-             await SendMessage(result?.message || null , null)
+             await SendMessage(chatId,result?.message || null , null)
              return
 
     }
@@ -135,6 +132,6 @@ app.post("/webhook", async (req, res) => {
   }
 
   // send back to client
-  await SendMessage(response, result);
+  await SendMessage(chatId,response, result);
   return;
 });
