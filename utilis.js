@@ -131,15 +131,16 @@ export async function SendMessage(chatId,response, result) {
 
 export async function storeinDB(action,data) {
    
+    await mongodb.connect()
   const db = mongodb.db("test")
   const col = db.collection('orders')
-  await mongodb.connect()
+
 try{
   
   if(action === "submit"){
     // check if order exists brfore
     await col.insertOne(data)
-  }if(action === "cancel"){
+  }else if(action === "cancel"){
     await col.deleteOne({chat_id:data.chat_id});
   }
   return 1;
