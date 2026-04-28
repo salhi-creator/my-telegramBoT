@@ -73,7 +73,7 @@ app.post("/webhook", async (req, res) => {
 
     if (action === "submit") {
       // mongo db store
-      await storeinDB(action,JSON.parse(order))
+      await storeinDB("submit",order)
     }
     if (action === "req-detail") {
     }
