@@ -61,14 +61,20 @@ app.post("/webhook", async (req, res) => {
     let request = null;
     if (action === "submit") {
       // mongo db store
-      request = await storeinDB("submit", { ...order, createdAt: Date.now() });
+      let createdAt = new Date().toLocaleString("en-GB", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      request = await storeinDB("submit", { ...order ,createdAt });
     }
     if (action === "req-detail") {
     }
     if (action === "cancel") {
       // mongo db delete
-            request = await storeinDB("cancel", { chat_id:order.chat_id });
-
+      request = await storeinDB("cancel", { chat_id: order.chat_id });
     }
 
     let CallBackMessage = `USER HISTORY MESSAGES WHIT YOU :\n ${history} \n USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n ORDER :\n
