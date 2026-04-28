@@ -137,12 +137,15 @@ export async function storeinDB(action,data) {
 try{
   
   if(action === "submit"){
+    // check if order exists brfore
     await col.insertOne(data)
   }if(action === "cancel"){
-
+    await col.deleteOne({chat_id:data.chat_id});
   }
+  return 1;
 
 }catch(err){
   console.log(err)
+  return 0
 }
 }

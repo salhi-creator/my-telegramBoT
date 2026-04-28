@@ -3,7 +3,7 @@ import axios from "axios";
 import http from "http";
 
 import { AIanswer } from "./AI.js";
-import { redisFunc, SendMessage, storeinDB  } from "./utilis.js";
+import { redisFunc, SendMessage, storeinDB } from "./utilis.js";
 
 const app = express();
 import dotenv from "dotenv";
@@ -53,34 +53,30 @@ app.post("/webhook", async (req, res) => {
     let ID = req.body.callback_query?.message?.chat?.id;
 
     let history = await redisFunc("getCachedHistory", { id: ID });
-    let order = await redisFunc('getInfo',{id:ID})
-    
+    let order = await redisFunc("getInfo", { id: ID });
 
     console.log("action ", action);
 
     //console.log("history : ",history)
-
-    let CallBackMessage = `USER HISTORY MESSAGES WHIT YOU :\n ${history} \n USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n ORDER :\n
-     ${action === "submit" ? "you should tell the user that his request has been set decent way" : ""} 
-     ${action === "cancel" ? "you should tell the user that his request has been canceled decent way" : ""} 
-     ${action === "req-detail" ? `gather all the info you include from user ${order} ,then give the user details of his project answer in message feild ` : ""} 
-    `;
-
-    let result = await AIanswer(CallBackMessage);
-
-    
-    await SendMessage(ID, result?.message || null, null);
-
+    let request = null;
     if (action === "submit") {
       // mongo db store
-      await storeinDB("submit",order)
+      request = await storeinDB("submit", { ...order, createdAt: Date.now() });
     }
     if (action === "req-detail") {
     }
     if (action === "cancel") {
       // mongo db delete
     }
-    
+
+    let CallBackMessage = `USER HISTORY MESSAGES WHIT YOU :\n ${history} \n USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n ORDER :\n
+     ${action === "submit" ? "you should tell the user that his request has been set decent way ,he must be clicked the submit button" : ""} 
+     ${action === "cancel" ? "you should tell the user that his request has been canceled decent way ,he must be clicked the cancel button" : ""} 
+     ${action === "req-detail" ? `gather all the info you include from user ${order} ,then give the user details of his project answer in message feild ,he must be clicked the show-detail button ` : ""} 
+    `;
+
+    let result = await AIanswer(CallBackMessage);
+    await SendMessage(ID, result?.message || null, null);
     console.log(result);
     response = result?.message ? result?.message : "wait a minute";
     delete result.message;
@@ -90,7 +86,7 @@ app.post("/webhook", async (req, res) => {
       UserMessage: message,
       info: { ...result.user, ...result.info },
     });
-    return
+    return;
   }
   if (!req.body.message && !req.body.callback_query) return;
 

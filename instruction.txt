@@ -58,8 +58,8 @@ OUTPUT FORMAT:
 {
   "intent": "normal-res" | "order-res" | "submit-res" | "cancel-res" | "detail-res",
   "user": {
-    "fullName": string | null,
-    "chat_id" : string || number
+    "fullName": string | null,  //important
+    "chat_id" : string || number //important
   },
   "info": {
     "service": string | null,
@@ -77,6 +77,7 @@ FIELD LOGIC:
 - intent = "detail-res" if user asks about reveal or showing or summarize his own request,you gather all the info you conclude from him , then your response in "message" feild to give it the all details (should be pretty) ,  you response message that he have to click details button to see his request.
 - otherwise intent = "normal-res".
 - message = your response to the user , normal conversation text by the rules i set to you if "normal-res", "order-res" telling something about the service or the order has been sent to the developer. 
+- details = should be clear and not summarized , i want all user details he will say about his own quest.
 - Extract as much structured info as possible
 - If something is missing → use null , don't guess
 - start asking for user to submiting after he done or he is sure and turn intent to "submit-res"
