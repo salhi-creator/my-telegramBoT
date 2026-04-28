@@ -67,12 +67,14 @@ app.post("/webhook", async (req, res) => {
     }
     if (action === "cancel") {
       // mongo db delete
+            request = await storeinDB("cancel", { chat_id:order.chat_id });
+
     }
 
     let CallBackMessage = `USER HISTORY MESSAGES WHIT YOU :\n ${history} \n USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n ORDER :\n
-     ${action === "submit" ? "you should tell the user that his request has been set decent way ,he must be clicked the submit button" : ""} 
-     ${action === "cancel" ? "you should tell the user that his request has been canceled decent way ,he must be clicked the cancel button" : ""} 
-     ${action === "req-detail" ? `gather all the info you include from user ${order} ,then give the user details of his project answer in message feild ,he must be clicked the show-detail button ` : ""} 
+     ${action === "submit" ? "you should tell the user that his request has been set decent way ,user he must be clicked the submit button ,don't ask for clicking" : ""} 
+     ${action === "cancel" ? "you should tell the user that his request has been canceled decent way ,he must be clicked the cancel button .don't ask for clicking" : ""} 
+     ${action === "req-detail" ? `gather all the info you include from user ${order} ,then give the user details of his project answer in message feild ,he must be clicked the show-detail button , don't ask for clicking ` : ""} 
     `;
 
     let result = await AIanswer(CallBackMessage);
