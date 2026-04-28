@@ -3,7 +3,7 @@ import axios from "axios";
 import http from "http";
 
 import { AIanswer } from "./AI.js";
-import { redisFunc, SendMessage } from "./utilis.js";
+import { redisFunc, SendMessage, storeinDB  } from "./utilis.js";
 
 const app = express();
 import dotenv from "dotenv";
@@ -40,14 +40,21 @@ app.post("/webhook", async (req, res) => {
 
   // when first time starts the bot
   if (message === "/start") {
-    await SendMessage(chatId,"👋 Welcome, I'm Hakim's AI assistant.\n\nI work with bots, web apps, and automation systems.\n\nExplain what you need—keep it simple, I’ll handle the technical side.")
+    await SendMessage(
+      chatId,
+      "👋 Welcome, I'm Hakim's AI assistant.\n\nI work with bots, web apps, and automation systems.\n\nExplain what you need—keep it simple, I’ll handle the technical side.",
+    );
 
     return;
   }
   // handel buttons click
   if (req.body.callback_query) {
-    let history = await redisFunc("getCachedHistory", { id: senderId });
     let action = req.body.callback_query.data;
+    let ID = req.body.callback_query?.message?.chat?.id;
+
+    let history = await redisFunc("getCachedHistory", { id: ID });
+    let order = await redisFunc('getInfo',{id:ID})
+    
 
     console.log("action ", action);
 
@@ -56,27 +63,24 @@ app.post("/webhook", async (req, res) => {
     let CallBackMessage = `USER HISTORY MESSAGES WHIT YOU :\n ${history} \n USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n ORDER :\n
      ${action === "submit" ? "you should tell the user that his request has been set decent way" : ""} 
      ${action === "cancel" ? "you should tell the user that his request has been canceled decent way" : ""} 
-     ${action === "req-detail" ? "gather all the info you include then give the user details of his project answer in message feild " : ""} 
+     ${action === "req-detail" ? `gather all the info you include from user ${order} ,then give the user details of his project answer in message feild ` : ""} 
     `;
 
     let result = await AIanswer(CallBackMessage);
 
-    let ID = req.body.callback_query?.message?.chat?.id
-    await SendMessage(ID,result?.message || null , null)
-       
+    
+    await SendMessage(ID, result?.message || null, null);
+
     if (action === "submit") {
       // mongo db store
-       
+      await storeinDB(action,JSON.parse(order))
     }
     if (action === "req-detail") {
-      
     }
-        if (action === "cancel") {
+    if (action === "cancel") {
       // mongo db delete
-            
-
     }
-    return
+    
     console.log(result);
     response = result?.message ? result?.message : "wait a minute";
     delete result.message;
@@ -86,6 +90,7 @@ app.post("/webhook", async (req, res) => {
       UserMessage: message,
       info: { ...result.user, ...result.info },
     });
+    return
   }
   if (!req.body.message && !req.body.callback_query) return;
 
@@ -112,9 +117,9 @@ app.post("/webhook", async (req, res) => {
   try {
     if (rate) {
       let history = await redisFunc("getCachedHistory", { id: senderId });
-
+      let order = await redisFunc("getInfo", { id: senderId });
       //console.log("history : ",history)
-      let AImessage = `${text} USER HISTORY MESSAGES WHIT YOU : \n${history ?? "do not exist yet"} \n `;
+      let AImessage = `PREVIOUS DETAILS INCLUDED: ${order} \n ${text} USER HISTORY MESSAGES WHIT YOU : \n${history ?? "do not exist yet"} \n `;
       console.log("AImessage", AImessage);
       result = await AIanswer(AImessage);
       // analyse AI data
@@ -135,6 +140,6 @@ app.post("/webhook", async (req, res) => {
   }
 
   // send back to client
-  await SendMessage(chatId,response, result);
+  await SendMessage(chatId, response, result);
   return;
 });

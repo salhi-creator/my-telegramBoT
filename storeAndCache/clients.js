@@ -20,7 +20,9 @@ export const redis = new Redis(
   },
 );
 
-
+/*(async ()=>{
+  await mongodb.connect()
+})()*/
 
 
 redis.on("connect", () => {
@@ -39,9 +41,7 @@ redis.on("reconnecting", () => {
   console.log("🔄 Redis reconnecting...");
 });
 
-/*(async ()=>{
-  await mongodb.connect()
-})()*/
+
 
 
 

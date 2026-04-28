@@ -3,7 +3,7 @@ dotenv.config();
 
 import axios from "axios";
 import fs from "fs/promises";
-import { redis } from "./storeAndCache/clients.js";
+import { redis , mongodb } from "./storeAndCache/clients.js";
 
 export async function FileReader(file) {
   const Insturactions = await fs.readFile(file, "utf8");
@@ -123,5 +123,21 @@ export async function SendMessage(chatId,response, result) {
   } catch (err) {
     console.error("WEBHOOK ERROR:", err);
     return;
+  }
+}
+
+
+
+
+export async function storeinDB(action,data) {
+   await mongodb.connect()
+  const db = mongodb.db("test")
+  const col = db.collection('orders')
+
+
+  if(action === "submit"){
+    await col.insertOne(data)
+  }if(action === "cancel"){
+
   }
 }
