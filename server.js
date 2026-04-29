@@ -95,9 +95,9 @@ app.post("/webhook", async (req, res) => {
     response = result?.message ? result?.message : "wait a minute";
     delete result.message;
     await redisFunc("cacheHistory", {
-      id: senderId,
+      id: ID,
       AImessage: response,
-      UserMessage: message,
+      UserMessage: `I ${action}ed`,
       info: { ...result.user, ...result.info },
     });
     return;

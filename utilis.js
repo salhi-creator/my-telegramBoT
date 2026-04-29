@@ -133,11 +133,11 @@ export async function storeinDB(action, data) {
     if (action === "submit") {
       // check if order exists brfore
       let exist = await col.findOne({ cha_id: data.cha_id });
-      if ((exist && escape.status === "canceled") || !exist) {
+      if ((exist && exist?.status === "canceled") || !exist) {
         await col.insertOne(data);
-      } else if (exist && escape.status !== "canceled") {
+      } else if (exist && exist?.status !== "canceled") {
         return {
-          msg: " we already have one request on our queue by his name , and he can only ask for one request till the developer cover it  , or he should contact him personally if he want something else",
+          msg: " we already have one request on our queue by his name , and he can only ask for one request till the developer cover it  , or he should contact him personally if he want something else , dont tell him to submit",
         };
       }
     } else if (action === "cancel") {
