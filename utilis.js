@@ -134,7 +134,7 @@ export async function storeinDB(action, data) {
 
       await col.insertOne(data);
     } else if (action === "cancel") {
-      await col.updateOne({ chat_id: data.chat_id ,requestId : data.requestId }, { $set:{status: "canceled"} });
+      await col.updateOne({ chat_id: data.chat_id  }, { $set:{status: "canceled"} });
     }
     return 1;
   } catch (err) {
