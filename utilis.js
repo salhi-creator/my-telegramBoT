@@ -3,7 +3,7 @@ dotenv.config();
 
 import axios from "axios";
 import fs from "fs/promises";
-import { redis , mongodb } from "./storeAndCache/clients.js";
+import { redis, mongodb } from "./storeAndCache/clients.js";
 
 export async function FileReader(file) {
   const Insturactions = await fs.readFile(file, "utf8");
@@ -32,7 +32,6 @@ export function safeExtractJSON(text) {
 }
 
 export async function redisFunc(method, data) {
-
   const key = `rate:${data.id}`;
   const keyMsg = `info:${data.id}:message`;
   const KeyUser = `info:${data.id}:order`;
@@ -40,7 +39,7 @@ export async function redisFunc(method, data) {
     const count = await redis.incr(key);
 
     if (count >= 1) {
-      await redis.expire(key, 30,"NX");
+      await redis.expire(key, 30, "NX");
     }
 
     const ttl = await redis.ttl(key);
@@ -53,13 +52,12 @@ export async function redisFunc(method, data) {
     return true;
   }
 
-    if(method === "getInfo"){
-    let res=  await redis.hgetall(KeyUser)
+  if (method === "getInfo") {
+    let res = await redis.hgetall(KeyUser);
     return res;
   }
 
-
- if (method === "cacheHistory") {
+  if (method === "cacheHistory") {
     await redis
       .multi()
       .rpush(
@@ -69,8 +67,9 @@ export async function redisFunc(method, data) {
           aiText: data.AImessage,
           time: Date.now(),
         }),
-      ).hset(KeyUser,{
-        ...data.info
+      )
+      .hset(KeyUser, {
+        ...data.info,
       })
       .expire(keyMsg, 1800, "NX")
       .expire(KeyUser, 1800, "NX")
@@ -80,22 +79,20 @@ export async function redisFunc(method, data) {
   await redis.ltrim(keyMsg, -20, -1);
 
   if (method === "getCachedHistory") {
-    let res = await redis.lrange(keyMsg, -20, -1)
+    let res = await redis.lrange(keyMsg, -20, -1);
     res = res.map((row) => JSON.parse(row));
-    let history = res.map((row) => `user said :  (${row.userText}) ==>  ai said : (${row.aiText}) \n `);
+    let history = res.map(
+      (row) =>
+        `user said :  (${row.userText}) ==>  ai said : (${row.aiText}) \n `,
+    );
     return history || "no history yet";
   }
 }
 
+let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`;
 
-
-
-
-
-  let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`;
-
-export async function SendMessage(chatId,response, result) {
-   try {
+export async function SendMessage(chatId, response, result) {
+  try {
     const call = await axios.post(urlSend, {
       chat_id: chatId,
       text: `${response}`,
@@ -126,27 +123,22 @@ export async function SendMessage(chatId,response, result) {
   }
 }
 
+export async function storeinDB(action, data) {
+  await mongodb.connect();
+  const db = mongodb.db("test");
+  const col = db.collection("orders");
 
+  try {
+    if (action === "submit") {
+      // check if order exists brfore
 
-
-export async function storeinDB(action,data) {
-   
-    await mongodb.connect()
-  const db = mongodb.db("test")
-  const col = db.collection('orders')
-
-try{
-  
-  if(action === "submit"){
-    // check if order exists brfore
-    await col.insertOne(data)
-  }else if(action === "cancel"){
-    await col.deleteOne({chat_id:data.chat_id});
+      await col.insertOne(data);
+    } else if (action === "cancel") {
+      await col.updateOne({ chat_id: data.chat_id ,requestId : data.requestId }, { $set:{status: "canceled"} });
+    }
+    return 1;
+  } catch (err) {
+    console.log(err);
+    return 0;
   }
-  return 1;
-
-}catch(err){
-  console.log(err)
-  return 0
-}
 }

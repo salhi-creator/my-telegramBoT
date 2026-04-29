@@ -55,20 +55,23 @@ app.post("/webhook", async (req, res) => {
     let history = await redisFunc("getCachedHistory", { id: ID });
     let order = await redisFunc("getInfo", { id: ID });
 
+
     console.log("action ", action);
 
     //console.log("history : ",history)
     let request = null;
     if (action === "submit") {
+      let iso = new Date().toISOString()
+      request = await storeinDB("submit", { ...order ,createdAt:iso, status:"active" });
+
       // mongo db store
-      let createdAt = new Date().toLocaleString("en-GB", {
+   /*   let createdAt = new Date().toLocaleString("en-GB", {
         year: "numeric",
         month: "short",
         day: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
-      });
-      request = await storeinDB("submit", { ...order ,createdAt });
+      });*/
     }
     if (action === "req-detail") {
     }
