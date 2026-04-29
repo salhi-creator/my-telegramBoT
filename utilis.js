@@ -131,7 +131,10 @@ export async function storeinDB(action, data) {
   try {
     if (action === "submit") {
       // check if order exists brfore
-
+      let exist = await col.findOne({cha_id:data.cha_id})
+      if(exist){
+        return {msg:" we already have one request on our queue by his name , and he can only ask for one request till we cover it , or he should contact me personally if he want something else"}
+      }
       await col.insertOne(data);
     } else if (action === "cancel") {
       await col.updateOne({ chat_id: data.chat_id  }, { $set:{status: "canceled"} });

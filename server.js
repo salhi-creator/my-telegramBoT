@@ -55,17 +55,20 @@ app.post("/webhook", async (req, res) => {
     let history = await redisFunc("getCachedHistory", { id: ID });
     let order = await redisFunc("getInfo", { id: ID });
 
-
     console.log("action ", action);
 
     //console.log("history : ",history)
     let request = null;
     if (action === "submit") {
-      let iso = new Date().toISOString()
-      request = await storeinDB("submit", { ...order ,createdAt:iso, status:"active" });
+      let iso = new Date().toISOString();
+      request = await storeinDB("submit", {
+        ...order,
+        createdAt: iso,
+        status: "active",
+      });
 
       // mongo db store
-   /*   let createdAt = new Date().toLocaleString("en-GB", {
+      /*   let createdAt = new Date().toLocaleString("en-GB", {
         year: "numeric",
         month: "short",
         day: "2-digit",
@@ -81,7 +84,7 @@ app.post("/webhook", async (req, res) => {
     }
 
     let CallBackMessage = `USER HISTORY MESSAGES WHIT YOU :\n ${history} \n USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n ORDER :\n
-     ${action === "submit" ? `you should tell the user that his request has been set decent way if value are equal 1 otherwise you tell him his request not setted and he must try again => value=(${request}) ,user he must be clicked the submit button ,don't ask for clicking` : ""} 
+     ${action === "submit" ? `you should tell the user ${request?.msg ? request.msg : `that his request has been set decent way if value are equal 1 otherwise you tell him his request not setted and he must try again => value=(${request})`} ,user he must be clicked the submit button ,don't ask for clicking` : ""} 
      ${action === "cancel" ? `you should tell the user that his request has been canceled decent way if value are equal 1 ,otherwise you tell him his request not setted and he must try again => value=(${request}) ,he must be clicked the cancel button .don't ask for clicking` : ""} 
      ${action === "req-detail" ? `gather all the info you include from user ${order} ,then give the user details of his project answer in message feild ,he must be clicked the show-detail button , don't ask for clicking ` : ""} 
     `;
