@@ -43,9 +43,6 @@ export async function redisFunc(method, data) {
       await redis.expire(key, 30, "NX");
     }
 
-    const ttl = await redis.ttl(key);
-    console.log("COUNT:", count, "TTL:", ttl);
-
     if (count > 5) {
       return false;
     }

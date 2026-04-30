@@ -42,13 +42,28 @@ app.post("/webhook", async (req, res) => {
   if (message === "/start") {
     await SendMessage(
       chatId,
-      "👋 Welcome, I'm Hakim's AI assistant.\n\nI work with bots, web apps, and automation systems.\n\nExplain what you need—keep it simple, I’ll handle the technical side.",
+      `
+👋 Welcome, I’m Hakim’s AI assistant.
+
+I help with bots, web apps, and automation systems.
+
+Just tell me what you need — keep it simple, and I’ll handle the technical side.
+
+⏳ Note: your conversation memory is active for 30 minutes.
+
+📌 You can submit only one request .
+
+If you need anything else or want to go further, you can contact Hakim directly.
+
+So… what can I help you with today?
+      `,
     );
 
     return;
   }
   // handel buttons click
   if (req.body.callback_query) {
+    console.log("callback data ", req.body.callback_query);
     let action = req.body.callback_query.data;
     let ID = req.body.callback_query?.message?.chat?.id;
     let name =
