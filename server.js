@@ -43,7 +43,7 @@ app.post("/webhook", async (req, res) => {
     await SendMessage(
       chatId,
       `
-👋 Welcome, I’m Hakim’s AI assistant.
+👋 Welcome, I’m Sage’s AI assistant.
 
 I help with bots, web apps, and automation systems.
 
@@ -53,7 +53,9 @@ Just tell me what you need — keep it simple, and I’ll handle the technical s
 
 📌 You can submit only one request .
 
-If you need anything else or want to go further, you can contact Hakim directly.
+click the submit button after you make sure , that will send it to Sage.
+
+If you need anything else or want to go further, you can contact Sage directly.
 
 So… what can I help you with today?
       `,
@@ -102,11 +104,13 @@ So… what can I help you with today?
     }
 
     let CallBackMessage = `USER HISTORY MESSAGES WHIT YOU :\n ${history} \n USER INFO : \n- FullName : ${name}\n- CHAT_ID: ${ID}\n ORDERS :\n
-    \n
-      set "user-attempt" : ${action === "submit" ? "submitted" : "canceled"}
-    \n
+
      ${action === "submit" ? `you should tell the user ${request?.msg ? request.msg : `that his request has been set decent way if value are equal 1 otherwise you tell him his request not setted and he must try again => value=(${request}), ,user he must be clicked the submit button ,don't ask for clicking`} ` : ""} 
-     ${action === "cancel" ? `you should tell the user that his request has been canceled decent way if value are equal 1 ,otherwise you tell him his request not setted and he must try again => value=(${request}) ,he must be clicked the cancel button .don't ask for clicking` : ""} 
+     ${action === "cancel" ? `you should tell the user that his request has been canceled decent way if value are equal 1 ,otherwise you tell him his request not canceled and he must try again => value=(${request}) ,he must be clicked the cancel button .don't ask for clicking` : ""} 
+    \n
+    
+    \n
+      set "user-attempt" : ${action === "submit" && request && !request?.msg ? "submitted" : "canceled"}
     \n`;
 
     let result = await AIanswer(CallBackMessage);
@@ -114,6 +118,7 @@ So… what can I help you with today?
     console.log(result);
     response = result?.message ? result?.message : "wait a minute";
     delete result.message;
+    delete result["user-attempt"];
     await redisFunc("cacheHistory", {
       id: ID,
       AImessage: response,
