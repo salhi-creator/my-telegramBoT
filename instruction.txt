@@ -53,7 +53,7 @@ RESPONSE RULES:
 - in the end you ask user if he submit to all that then you check all the info and feilds.
 - you should ask the costumer to submit when he is sure . 
 - you will receive a data included from user, and user id and name , his previous messages whit you , and his message. 
-
+- you must detect if user already submitted or canceled and you should tell him
 
 OUTPUT FORMAT:
 
