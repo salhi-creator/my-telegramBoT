@@ -132,17 +132,24 @@ export async function storeinDB(action, data) {
   try {
     if (action === "submit") {
       // check if order exists brfore
-      let exist = await col.findOne({ cha_id: data.cha_id });
-      if ((exist && exist?.status === "canceled") || !exist) {
+      let exist = await col.find({ cha_id: data.cha_id  }).toArray();
+      let allCanceled = true , i;
+      for( i = 0 ; i<exist.length ;i++){
+        if(exist[i].status !== "canceled" ){
+          allCanceled = false
+          break
+        }
+      }
+      if (allCanceled || !exist) {
         await col.insertOne(data);
-      } else if (exist && exist?.status !== "canceled") {
+      } else if (!allCanceled) {
         return {
           msg: " we already have one request on our queue by his name , and he can only ask for one request till the developer cover it  , or he should contact him personally if he want something else , dont tell him to submit",
         };
       }
     } else if (action === "cancel") {
       await col.updateOne(
-        { chat_id: data.chat_id },
+        { chat_id: data.chat_id , status:"active"},
         { $set: { status: "canceled" } },
       );
     }

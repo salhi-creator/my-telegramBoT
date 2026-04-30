@@ -85,7 +85,7 @@ FIELD LOGIC:
 - dont ask for clicking the buttons if user already submitted or canceled or ask for details.
 - start asking for user to submiting after he done or he is sure and turn intent to "submit-res"
 - if you see user are just playing like submiting then  canceling many times , or unserious turn intent to "unserious-res" , and you ask user to quit that or never turn intent to "submit-res" or "cancel-res" of his request ever again.
-
+- deadline = you ask the user about time he expects his request to be done , and the developer will message him back if its suits.
 
 FIELD RULES:
 - Extract as much structured info as possible
