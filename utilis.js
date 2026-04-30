@@ -48,6 +48,8 @@ export async function redisFunc(method, data) {
     }
 
     return true;
+  } else if (action === "check") {
+    return await redis.hget(KeyUser, "user-attempt");
   }
 
   if (method === "getInfo") {
@@ -90,28 +92,28 @@ export async function redisFunc(method, data) {
 let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendMessage`;
 
 export async function SendMessage(chatId, response, result) {
+  let reply_markup = undefined;
+
+  let userAttempt = await redisFunc({ id: chatId });
+  if (result?.intent === "submit-res" && userAttempt !== "submitted") {
+    reply_markup = {
+      inline_keyboard: [
+        [{ text: "Submit Your Request", callback_data: "submit" }],
+      ],
+    };
+  } else if (result?.intent === "cancel-res" && userAttempt !== "canceled") {
+    reply_markup = {
+      inline_keyboard: [
+        [{ text: "Cancel Your Request", callback_data: "cancel" }],
+      ],
+    };
+  }
+
   try {
     const call = await axios.post(urlSend, {
       chat_id: chatId,
       text: `${response}`,
-      reply_markup:
-        result?.intent === "submit-res" ||
-        result?.intent === "cancel-res" ||
-        result?.intent === "detail-res"
-          ? {
-              inline_keyboard: [
-                [{ text: "Submit Your Request", callback_data: "submit" }],
-                [{ text: "Cancel Your Request", callback_data: "cancel" }],
-
-                [
-                  {
-                    text: "Show Details Of Your Request",
-                    callback_data: "req-detail",
-                  },
-                ],
-              ],
-            }
-          : undefined,
+      reply_markup,
     });
 
     return;
@@ -129,12 +131,13 @@ export async function storeinDB(action, data) {
   try {
     if (action === "submit") {
       // check if order exists brfore
-      let exist = await col.find({ cha_id: data.cha_id  }).toArray();
-      let allCanceled = true , i;
-      for( i = 0 ; i<exist.length ;i++){
-        if(exist[i].status !== "canceled" ){
-          allCanceled = false
-          break
+      let exist = await col.find({ cha_id: data.cha_id }).toArray();
+      let allCanceled = true,
+        i;
+      for (i = 0; i < exist.length; i++) {
+        if (exist[i].status !== "canceled") {
+          allCanceled = false;
+          break;
         }
       }
       if (allCanceled || !exist) {
@@ -146,10 +149,11 @@ export async function storeinDB(action, data) {
       }
     } else if (action === "cancel") {
       await col.updateOne(
-        { chat_id: data.chat_id , status:"active"},
+        { chat_id: data.chat_id, status: "active" },
         { $set: { status: "canceled" } },
       );
     }
+
     return 1;
   } catch (err) {
     console.log(err);

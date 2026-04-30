@@ -67,9 +67,9 @@ So… what can I help you with today?
     let action = req.body.callback_query.data;
     let ID = req.body.callback_query?.message?.chat?.id;
     let name =
-      req.body.callback_query?.message?.from?.first_name +
+      req.body.callback_query?.from?.first_name +
       " " +
-      req.body.callback_query?.message?.from?.last_name;
+      req.body.callback_query?.from?.last_name;
 
     let history = await redisFunc("getCachedHistory", { id: ID });
     let order = await redisFunc("getInfo", { id: ID });
@@ -95,18 +95,19 @@ So… what can I help you with today?
         minute: "2-digit",
       });*/
     }
-    if (action === "req-detail") {
-    }
+
     if (action === "cancel") {
       // mongo db delete
       request = await storeinDB("cancel", { chat_id: order.chat_id });
     }
 
     let CallBackMessage = `USER HISTORY MESSAGES WHIT YOU :\n ${history} \n USER INFO : \n- FullName : ${name}\n- CHAT_ID: ${ID}\n ORDERS :\n
+    \n
+      set "user-attempt" : ${action === "submit" ? "submitted" : "canceled"}
+    \n
      ${action === "submit" ? `you should tell the user ${request?.msg ? request.msg : `that his request has been set decent way if value are equal 1 otherwise you tell him his request not setted and he must try again => value=(${request}), ,user he must be clicked the submit button ,don't ask for clicking`} ` : ""} 
      ${action === "cancel" ? `you should tell the user that his request has been canceled decent way if value are equal 1 ,otherwise you tell him his request not setted and he must try again => value=(${request}) ,he must be clicked the cancel button .don't ask for clicking` : ""} 
-     ${action === "req-detail" ? `gather all the info you include from user ${order} ,then give the user details of his project answer in message feild , don't ask for clicking the show detail-btn ` : ""} 
-    `;
+    \n`;
 
     let result = await AIanswer(CallBackMessage);
     await SendMessage(ID, result?.message || null, null);
