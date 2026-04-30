@@ -48,7 +48,7 @@ export async function redisFunc(method, data) {
     }
 
     return true;
-  } else if (action === "check") {
+  } else if (method === "check") {
     return await redis.hget(KeyUser, "user-attempt");
   }
 
