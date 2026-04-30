@@ -33,9 +33,9 @@ export function safeExtractJSON(text) {
 }
 
 export async function redisFunc(method, data) {
-  const key = `rate:${data.id}`;
-  const keyMsg = `info:${data.id}:message`;
-  const KeyUser = `info:${data.id}:order`;
+  const key = `rate:${data?.id || undefined}`;
+  const keyMsg = `info:${data?.id || undefined}:message`;
+  const KeyUser = `info:${data?.id || undefined}:order`;
   if (method === "rate") {
     const count = await redis.incr(key);
 
@@ -52,12 +52,12 @@ export async function redisFunc(method, data) {
     return await redis.hget(KeyUser, "user-attempt");
   }
 
-  if (method === "getInfo") {
+  else if (method === "getInfo") {
     let res = await redis.hgetall(KeyUser);
     return res;
   }
 
-  if (method === "cacheHistory") {
+  else if (method === "cacheHistory") {
     await redis
       .multi()
       .rpush(
@@ -74,9 +74,11 @@ export async function redisFunc(method, data) {
       .expire(keyMsg, 1800, "NX")
       .expire(KeyUser, 1800, "NX")
       .exec();
+
+        await redis.ltrim(keyMsg, -20, -1);
+
   }
 
-  await redis.ltrim(keyMsg, -20, -1);
 
   if (method === "getCachedHistory") {
     let res = await redis.lrange(keyMsg, -20, -1);
@@ -94,7 +96,7 @@ let urlSend = `https://api.telegram.org/bot${process.env.TELE_BOT_API_KEY}/sendM
 export async function SendMessage(chatId, response, result) {
   let reply_markup = undefined;
 
-  let userAttempt = await redisFunc({ id: chatId });
+  let userAttempt = await redisFunc("check",{  id: chatId || null });
   if (result?.intent === "submit-res" && userAttempt !== "submitted") {
     reply_markup = {
       inline_keyboard: [
