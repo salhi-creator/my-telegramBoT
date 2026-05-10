@@ -47,6 +47,8 @@ app.post("/webhook", async (req, res) => {
 
 I help with bots, web apps, and automation systems.
 
+I can reply on you after 1 minute in Worst cases , usualy imadiate response. 
+
 Just tell me what you need — keep it simple, and I’ll handle the technical side.
 
 ⏳ Note: your conversation memory is active for 30 minutes.
@@ -131,7 +133,7 @@ So… what can I help you with today?
 
   // rate limiter checker
 
-  let text = `USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n USER MESSAGE : \n${message} \n`;
+  let text = `USER INFO : \n- FullName : ${senderName}\n- CHAT_ID: ${chatId}\n USER CURRENT MESSAGE : \n${message} \n`;
   let rate = null;
   try {
     rate = await redisFunc("rate", { id: senderId });
@@ -154,7 +156,7 @@ So… what can I help you with today?
       let history = await redisFunc("getCachedHistory", { id: senderId });
       let order = await redisFunc("getInfo", { id: senderId });
       //console.log("history : ",history)
-      let AImessage = `PREVIOUS DETAILS INCLUDED: ${order} \n ${text} USER HISTORY MESSAGES WHIT YOU : \n${history ?? "do not exist yet"} \n `;
+      let AImessage = `PREVIOUS DETAILS INCLUDED: ${order} \n ${text} \n USER HISTORY MESSAGES WHIT YOU : \n${history ?? "do not exist yet"} \n `;
       console.log("AImessage", AImessage);
       result = await AIanswer(AImessage);
       // analyse AI data
