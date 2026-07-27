@@ -4,11 +4,11 @@ dotenv.config();
 import Redis from "ioredis";
 import { MongoClient } from "mongodb";
 
-export const mongodb = new MongoClient(process.env.MONGO_URL)
+export const mongodb = new MongoClient(process.env.MONGO_URL);
 export const redis = new Redis(
   {
     host: process.env.REDIS_HOST,
-    port: 12694,
+    port: 10033,
     username: "default",
     password: process.env.REDIS_PASSWORD,
   },
@@ -23,7 +23,6 @@ export const redis = new Redis(
 /*(async ()=>{
   await mongodb.connect()
 })()*/
-
 
 redis.on("connect", () => {
   console.log("✅ Redis connected");
@@ -41,12 +40,7 @@ redis.on("reconnecting", () => {
   console.log("🔄 Redis reconnecting...");
 });
 
-
-
-
-
-
-process.on("SIGINT",()=>{
+process.on("SIGINT", () => {
   redis.disconnect();
-  mongodb.close()
-})
+  mongodb.close();
+});

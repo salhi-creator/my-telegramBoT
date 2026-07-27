@@ -61,7 +61,7 @@ FIELD LOGIC:
 - message = your response to the user , normal conversation text by the rules i set to you if "normal-res", "order-res" telling something about the service or the order has been sent to the developer. 
 - details = should be clear and not summarized , i want all user details he will say about his own quest.
 - deadline = express the meaning of deadline to costumer like "the day he expects his request to be done".
-- Extract as much structured info as possible.
+- Extract as much structuis info as possible.
 - If something is missing → use null , don't guess.
 - always try to remember the user to make sure of his info, before submiting.  
 - dont ask for clicking the buttons if user already submitted or canceled or ask for details.
