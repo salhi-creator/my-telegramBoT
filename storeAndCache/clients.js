@@ -8,7 +8,7 @@ export const mongodb = new MongoClient(process.env.MONGO_URL);
 export const redis = new Redis(
   {
     host: process.env.REDIS_HOST,
-    port: 10033,
+    port: process.env.REDIS_PORT,
     username: "default",
     password: process.env.REDIS_PASSWORD,
   },
